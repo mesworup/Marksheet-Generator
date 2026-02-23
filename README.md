@@ -43,6 +43,7 @@ For batch processing, your Excel or CSV file must contain the following headers:
 Any additional columns will be treated as Subject Names with their corresponding marks.
 
 ### 🛠️ Built With
+
 * ttkbootstrap - Modern GUI theming.
 * ReportLab - PDF generation engine.
 * Pandas - Data manipulation.
