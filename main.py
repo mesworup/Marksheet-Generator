@@ -30,8 +30,13 @@ class MarksheetApp:
         header_frame = ttk.Frame(self.main_container)
         header_frame.pack(fill=X, pady=(0, 10))
         
-        ttk.Label(header_frame, text="🎓 Kathmandu National School", 
+        ttk.Label(header_frame, text="🎓 ABC School", 
                   font=("Segoe UI", 24, "bold"), bootstyle=PRIMARY).pack()
+        
+        # Added random address below school name
+        ttk.Label(header_frame, text="123 Education Way, Ward No. 4, Kathmandu, Nepal", 
+                  font=("Segoe UI", 10), bootstyle=SECONDARY).pack()
+
         ttk.Label(header_frame, text="Official Academic Reporting Portal", 
                   font=("Segoe UI", 11), bootstyle=SECONDARY).pack()
 
