@@ -23,7 +23,7 @@ def generate_marksheet_pdf(student_data, subjects, marks, output_path):
     address_style = ParagraphStyle('Addr', alignment=1, fontSize=10, leading=12, fontName="Helvetica", textColor=colors.HexColor("#34495E"), spaceAfter=5)
     report_style = ParagraphStyle('Rep', alignment=1, fontSize=14, leading=18, fontName="Helvetica-Bold", textColor=colors.HexColor("#7F8C8D"), spaceAfter=20)
 
-    elements.append(Paragraph("KATHMANDU NATIONAL SCHOOL", school_style))
+    elements.append(Paragraph("ABC SCHOOL", school_style))
     elements.append(Paragraph("123 Education Way, Ward No. 4, Kathmandu, Nepal", address_style))
     elements.append(Paragraph("PROGRESS REPORT", report_style))
 

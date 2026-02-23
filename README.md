@@ -38,28 +38,22 @@ python main.py
 ### 4. Batch Import Format
 For batch processing, your Excel or CSV file must contain the following headers:
 
-Name, Roll, Grade
-
+<pre>Name, Roll, Grade
+</pre>
 Any additional columns will be treated as Subject Names with their corresponding marks.
 
-🛠️ Built With
-ttkbootstrap - Modern GUI theming.
+### 🛠️ Built With
+* ttkbootstrap - Modern GUI theming.
+* ReportLab - PDF generation engine.
+* Pandas - Data manipulation.
+* Matplotlib - Performance charting.
 
-ReportLab - PDF generation engine.
-
-Pandas - Data manipulation.
-
-Matplotlib - Performance charting.
-
-📝 License
-This project is for educational use. Feel free to modify it for your school's specific needs.
-
-
----
-
-### 🎨 Visualizing the Workflow
-The system follows a linear data pipeline to ensure accuracy and visual appeal:
+## 📸 Screenshots
+> *Tip: Replace these placeholders with actual screenshots of your app!*
+1. **Main Interface:** `C:\Users\razzs\OneDrive\Documents\Project\Marksheet-Generator\image.png`
+2. **Generated Marksheet PDF:** `C:\Users\razzs\OneDrive\Documents\Project\Marksheet-Generator\testpdf.png`
 
 
 
-**Now that you have the requirements and the README, would you like me to help you double
+
+
