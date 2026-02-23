@@ -17,6 +17,19 @@ A professional Python-based desktop application designed for schools to automate
 * `utils.py`: Generates performance charts.
 * `requirements.txt`: List of necessary Python libraries.
 
+## 📊 Grading Logic (Nepal Secondary Education Standard)
+
+| Percentage | Grade | GPA | Remarks |
+| :--- | :--- | :--- | :--- |
+| 90 - 100 | A+ | 4.0 | Outstanding |
+| 80 - 89 | A | 3.6 | Excellent |
+| 70 - 79 | B+ | 3.2 | Very Good |
+| 60 - 69 | B | 2.8 | Good |
+| 50 - 59 | C+ | 2.4 | Satisfactory |
+| 40 - 49 | C | 2.0 | Acceptable |
+| 35 - 39 | D | 1.6 | Basic |
+| Below 35 | NG | 0.0 | Non-Graded |
+
 ## 🚀 Getting Started
 
 ### 1. Prerequisites

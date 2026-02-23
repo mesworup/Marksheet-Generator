@@ -11,9 +11,9 @@ from batch_processor import batch_generate_marksheets
 class MarksheetApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Marksheet Generation System v1.0")
+        self.root.title("Marksheet Generation System")
         
-        # Increased window height to 850 to ensure visibility on most monitors
+        # Increased window height to 850 for visibility
         self.root.geometry("1000x850")
         
         self.subject_entries = []
@@ -30,10 +30,10 @@ class MarksheetApp:
         header_frame = ttk.Frame(self.main_container)
         header_frame.pack(fill=X, pady=(0, 10))
         
+        # Kept as ABC School per your request
         ttk.Label(header_frame, text="🎓 ABC School", 
                   font=("Segoe UI", 24, "bold"), bootstyle=PRIMARY).pack()
         
-        # Added random address below school name
         ttk.Label(header_frame, text="123 Education Way, Ward No. 4, Kathmandu, Nepal", 
                   font=("Segoe UI", 10), bootstyle=SECONDARY).pack()
 
@@ -43,7 +43,6 @@ class MarksheetApp:
         ttk.Separator(self.main_container, bootstyle=SECONDARY).pack(fill=X, pady=10)
 
         # --- Student Information Section ---
-        # Reduced ipady from 15 to 10 to save vertical space
         student_container = ttk.Frame(self.main_container, bootstyle=LIGHT)
         student_container.pack(fill=X, pady=5, ipadx=15, ipady=10)
         
@@ -83,7 +82,6 @@ class MarksheetApp:
         ttk.Button(controls_frame, text="➖ Remove Last", bootstyle=DANGER, command=self.remove_subject_row).pack(side=LEFT)
 
         # --- Action Buttons ---
-        # Positioned at the bottom of the container
         action_frame = ttk.Frame(self.main_container)
         action_frame.pack(fill=X, pady=15)
 
@@ -114,16 +112,26 @@ class MarksheetApp:
                 "Grade": self.grade_entry.get().strip()
             }
             subjects = [s.get().strip() for s, m in zip(self.subject_entries, self.mark_entries) if s.get().strip()]
-            marks = [m.get().strip() for s, m in zip(self.subject_entries, self.mark_entries) if s.get().strip()]
+            marks_raw = [m.get().strip() for s, m in zip(self.subject_entries, self.mark_entries) if s.get().strip()]
 
             if not student["Name"] or not subjects:
                 messagebox.showerror("Error", "Please fill Student Name and at least one Subject.")
                 return
 
+            # NEPAL STANDARD VALIDATION: Checks numeric integrity and range
+            marks = []
+            for m in marks_raw:
+                if not m.isdigit():
+                    raise ValueError(f"Invalid mark: '{m}'. Marks must be numbers.")
+                val = int(m)
+                if not (0 <= val <= 100):
+                    raise ValueError(f"Mark '{val}' out of range (0-100).")
+                marks.append(val)
+
             output_file = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files","*.pdf")])
             if not output_file: return
 
-            generate_marksheet_pdf(student, subjects, [int(m) for m in marks], output_file)
+            generate_marksheet_pdf(student, subjects, marks, output_file)
             messagebox.showinfo("Success", "PDF Generated!")
         except Exception as e:
             messagebox.showerror("Error", f"Failed: {str(e)}")
