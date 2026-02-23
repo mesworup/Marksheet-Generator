@@ -1,167 +1,112 @@
-# pdf_generator.py
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle
-from reportlab.lib.utils import ImageReader
-import matplotlib.pyplot as plt
-import io
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.units import inch
 
-# ================= GPA Letter Conversion =================
-def gpa_to_letter(gpa):
-    if gpa >= 4.0:
-        return "A+"
-    elif gpa >= 3.6:
-        return "A"
-    elif gpa >= 3.2:
-        return "B+"
-    elif gpa >= 2.8:
-        return "B"
-    elif gpa >= 2.4:
-        return "C+"
-    elif gpa >= 2.0:
-        return "C"
-    else:
-        return "F"
+def get_grade_and_gpa(mark):
+    """Reference logic for grades and points"""
+    if mark >= 90: return "A+", 4.0
+    elif mark >= 80: return "A", 3.6
+    elif mark >= 70: return "B+", 3.2
+    elif mark >= 60: return "B", 2.8
+    elif mark >= 50: return "C+", 2.4
+    elif mark >= 40: return "C", 2.0
+    else: return "D", 1.0
 
-# ================= PDF Generator with Chart =================
-def generate_marksheet_pdf(student, subjects, marks, output_file):
-    """
-    Generates a PDF marksheet for a single student with GPA reference and marks bar chart.
+def generate_marksheet_pdf(student_data, subjects, marks, output_path):
+    doc = SimpleDocTemplate(output_path, pagesize=A4, topMargin=0.5*inch)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # --- Header ---
+    school_style = ParagraphStyle('Sch', alignment=1, fontSize=22, fontName="Helvetica-Bold", textColor=colors.HexColor("#2C3E50"))
+    report_style = ParagraphStyle('Rep', alignment=1, fontSize=14, spaceAfter=20, fontName="Helvetica-Bold", textColor=colors.HexColor("#7F8C8D"))
     
-    student: dict with keys 'Name', 'Roll', 'Grade', 'Section'
-    subjects: list of subject names
-    marks: list of corresponding marks
-    output_file: PDF output path
-    """
+    elements.append(Paragraph("KATHMANDU NATIONAL SCHOOL", school_style))
+    elements.append(Paragraph("PROGRESS REPORT", report_style))
 
-    # School info
-    school_name = "Kathmandu National School"
-    school_address = "Surya Bikram Gyawali Marg, Kathmandu, Nepal"
+    # --- Student Info ---
+    info_data = [[f"Student Name: {student_data['Name']}", f"Roll No: {student_data['Roll']}"],
+                 [f"Grade: {student_data['Grade']}", ""]]
+    info_table = Table(info_data, colWidths=[4*inch, 2.5*inch])
+    info_table.setStyle(TableStyle([('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'), ('BOTTOMPADDING', (0,0), (-1,-1), 12)]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 0.2 * inch))
 
-    total_marks = sum(marks)
-    percentage = round((total_marks / (len(subjects)*100))*100, 2)
+    # --- Main Marks Table ---
+    table_data = [["Subject", "Full Marks", "Marks Obtained"]]
+    total_marks, total_gp = 0, 0
+    
+    for sub, mark in zip(subjects, marks):
+        table_data.append([sub, "100", str(mark)])
+        total_marks += mark
+        _, gp = get_grade_and_gpa(mark)
+        total_gp += gp
 
-    # GPA calculation
-    if percentage >= 90:
-        gpa = 4.0
-    elif percentage >= 80:
-        gpa = 3.6
-    elif percentage >= 70:
-        gpa = 3.2
-    elif percentage >= 60:
-        gpa = 2.8
-    elif percentage >= 50:
-        gpa = 2.4
-    elif percentage >= 40:
-        gpa = 2.0
-    else:
-        gpa = 0.0
+    avg_marks = total_marks / len(marks)
+    final_gpa = total_gp / len(marks)
+    final_letter, _ = get_grade_and_gpa(avg_marks)
 
-    gpa_letter = gpa_to_letter(gpa)
+    # Adding Summary Rows with Spanning (Merging Cells)
+    # Total Row
+    table_data.append(["TOTAL MARKS", "", str(total_marks)])
+    # Percentage Row (Center Aligned via Spanning)
+    table_data.append(["PERCENTAGE OBTAINED", "", f"{avg_marks:.2f}%"])
+    # GPA Row (Center Aligned via Spanning)
+    table_data.append(["FINAL GPA (GRADE)", "", f"{final_gpa:.2f} ({final_letter})"])
 
-    # ================= PDF =================
-    c = canvas.Canvas(output_file, pagesize=letter)
-    width, height = letter
+    main_table = Table(table_data, colWidths=[3.5*inch, 1.5*inch, 1.5*inch])
+    
+    # Styling with Span: (column_start, row_start), (column_end, row_end)
+    summary_idx = len(table_data) - 3
+    main_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#2C3E50")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BACKGROUND', (0, summary_idx), (-1, -1), colors.HexColor("#ECF0F1")),
+        ('FONTNAME', (0, summary_idx), (-1, -1), 'Helvetica-Bold'),
+        # Merge the "Subject" and "Full Marks" columns for the last three rows
+        ('SPAN', (0, summary_idx), (1, summary_idx)),         # Total span
+        ('SPAN', (0, summary_idx+1), (1, summary_idx+1)),     # Percentage span
+        ('SPAN', (0, summary_idx+2), (1, summary_idx+2)),     # GPA span
+    ])
+    
+    main_table.setStyle(main_style)
+    elements.append(main_table)
+    elements.append(Spacer(1, 0.4 * inch))
 
-    # Background
-    c.setFillColor(colors.white)
-    c.rect(0, 0, width, height, fill=True, stroke=False)
-
-    # School Header
-    c.setFillColor(colors.black)
-    c.setFont("Helvetica-Bold", 18)
-    c.drawCentredString(width/2, height-50, school_name)
-    c.setFont("Helvetica", 12)
-    c.drawCentredString(width/2, height-70, school_address)
-
-    # Student Details
-    c.setFont("Helvetica-Bold", 14)
-    y_position = height - 110
-    c.drawString(50, y_position, f"Student Name: {student['Name']}")
-    c.drawString(350, y_position, f"Roll No: {student['Roll']}")
-    y_position -= 20
-    c.drawString(50, y_position, f"Grade: {student['Grade']}")
-    c.drawString(350, y_position, f"Section: {student['Section']}")
-
-    # ================= Main Marks Table =================
-    table_data = [["Subject", "Marks"]]
-    for s, m in zip(subjects, marks):
-        table_data.append([s, str(m)])
-    table_data.append(["Total", f"{total_marks} / {len(subjects)*100}"])
-    table_data.append(["Percentage", f"{percentage}%"])
-    table_data.append(["GPA", f"{gpa} ({gpa_letter})"])
-
-    table = Table(table_data, colWidths=[250, 120])
-
-    # Colors
-    header_bg = colors.HexColor("#FFD966")  # Golden header
-    footer_bg = colors.HexColor("#FFF4B2")  # Light yellow footer
-
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), header_bg),
-        ('BACKGROUND', (0,-3), (-1,-1), footer_bg),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('FONTNAME', (0,-3), (-1,-1), 'Helvetica-Bold'),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-    ]))
-
-    table_width, table_height = table.wrap(0,0)
-    x = (width - table_width)/2
-    y = y_position - 40
-    table.drawOn(c, x, y - table_height)
-
-    # ================= GPA Reference Table =================
-    ref_title_y = y - table_height - 40
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(width/2, ref_title_y, "GPA Reference")
-
+    # --- Reference Grading Table ---
+    elements.append(Paragraph("GRADING SYSTEM REFERENCE", ParagraphStyle('RefTitle', fontSize=10, fontName="Helvetica-Bold", spaceAfter=5)))
+    
     ref_data = [
-        ["GPA Range", "Grade"],
-        ["4.0", "A+"],
-        ["3.6 – 3.9", "A"],
-        ["3.2 – 3.5", "B+"],
-        ["2.8 – 3.1", "B"],
-        ["2.4 – 2.7", "C+"],
-        ["2.0 – 2.3", "C"],
-        ["Below 2.0", "F"],
+        ["Interval", "Grade", "Grade Point", "Description"],
+        ["90% - 100%", "A+", "4.0", "Outstanding"],
+        ["80% - 89%", "A", "3.6", "Excellent"],
+        ["70% - 79%", "B+", "3.2", "Very Good"],
+        ["60% - 69%", "B", "2.8", "Good"],
+        ["50% - 59%", "C+", "2.4", "Satisfactory"],
+        ["40% - 49%", "C", "2.0", "Acceptable"],
+        ["Below 40%", "D", "1.0", "Insufficient"]
     ]
-
-    ref_table = Table(ref_data, colWidths=[150,150])
+    
+    ref_table = Table(ref_data, colWidths=[1.5*inch, 1*inch, 1.2*inch, 1.8*inch])
     ref_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), header_bg),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#EEEEEE")),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
     ]))
+    elements.append(ref_table)
+    elements.append(Spacer(1, 0.6 * inch))
 
-    ref_width, ref_height = ref_table.wrap(0,0)
-    ref_x = (width - ref_width)/2
-    ref_y = ref_title_y - 20 - ref_height
-    ref_table.drawOn(c, ref_x, ref_y)
+    # --- Signatures ---
+    sig_data = [["____________________", "____________________"], ["Class Teacher", "Principal"]]
+    sig_table = Table(sig_data, colWidths=[3.25*inch, 3.25*inch])
+    sig_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'), ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold')]))
+    elements.append(sig_table)
 
-    # ================= Marks Bar Chart =================
-    plt.figure(figsize=(5,2.5))
-    bars = plt.bar(subjects, marks, color="#4CAF50")
-    plt.ylim(0, 100)
-    plt.ylabel("Marks")
-    plt.title("Marks Distribution")
-    for bar, mark in zip(bars, marks):
-        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1, str(mark),
-                 ha='center', va='bottom', fontsize=9)
-    plt.tight_layout()
-
-    # Save chart to memory
-    buf = io.BytesIO()
-    plt.savefig(buf, format='PNG', dpi=150)
-    plt.close()
-    buf.seek(0)
-
-    # Embed chart in PDF
-    chart_height = 200
-    c.drawImage(ImageReader(buf), x, ref_y - chart_height - 20, width=table_width, height=chart_height)
-
-    # Save PDF
-    c.save()
+    doc.build(elements)

@@ -1,138 +1,140 @@
-# main.py
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+
+# Custom Modules
 from pdf_generator import generate_marksheet_pdf
 from batch_processor import batch_generate_marksheets
 
-# ================= Subject Row Functions =================
-def add_subject_row(frame, s_entries, m_entries):
-    row_index = len(s_entries) + 1  # +1 because row 0 is headers
-    s = ttk.Entry(frame, width=25)
-    s.grid(row=row_index, column=0, padx=5, pady=4, sticky="w")
-    m = ttk.Entry(frame, width=10)
-    m.grid(row=row_index, column=1, padx=5, pady=4, sticky="w")
-    s_entries.append(s)
-    m_entries.append(m)
+class MarksheetApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Marksheet Generation System v1.0")
+        
+        # Increased window height to 850 to ensure visibility on most monitors
+        self.root.geometry("1000x850")
+        
+        self.subject_entries = []
+        self.mark_entries = []
+        
+        self._build_ui()
 
-def remove_subject_row(s_entries, m_entries):
-    if s_entries:
-        s_entries[-1].destroy()
-        m_entries[-1].destroy()
-        s_entries.pop()
-        m_entries.pop()
+    def _build_ui(self):
+        # Main Container
+        self.main_container = ttk.Frame(self.root, padding=20)
+        self.main_container.pack(fill=BOTH, expand=YES)
 
-# ================= GUI =================
-root = ttk.Window(themename="flatly")
-root.title("Marksheet Generator")
-root.geometry("950x750")
-root.configure(bg="#EEDC82")  # flaxen background
+        # --- Header Section ---
+        header_frame = ttk.Frame(self.main_container)
+        header_frame.pack(fill=X, pady=(0, 10))
+        
+        ttk.Label(header_frame, text="🎓 Kathmandu National School", 
+                  font=("Segoe UI", 24, "bold"), bootstyle=PRIMARY).pack()
+        ttk.Label(header_frame, text="Official Academic Reporting Portal", 
+                  font=("Segoe UI", 11), bootstyle=SECONDARY).pack()
 
-# Center card frame with white background
-card = ttk.Frame(root, padding=25, bootstyle="white")
-card.place(relx=0.5, rely=0.5, anchor="center")  # center the card
+        ttk.Separator(self.main_container, bootstyle=SECONDARY).pack(fill=X, pady=10)
 
-# Constants
-LEFT_MARGIN = 0  # entries inside card centered, so no extra left margin
+        # --- Student Information Section ---
+        # Reduced ipady from 15 to 10 to save vertical space
+        student_container = ttk.Frame(self.main_container, bootstyle=LIGHT)
+        student_container.pack(fill=X, pady=5, ipadx=15, ipady=10)
+        
+        ttk.Label(student_container, text="STUDENT INFORMATION", font=("Segoe UI", 10, "bold"), bootstyle=INFO).grid(row=0, column=0, columnspan=4, sticky=W, padx=10, pady=(0,5))
 
-# School Title
-ttk.Label(card, text="Kathmandu National School", font=("Segoe UI", 22, "bold")).grid(
-    row=0, column=0, columnspan=4, pady=15
-)
+        ttk.Label(student_container, text="Student Name:").grid(row=1, column=0, sticky=E, padx=5, pady=5)
+        self.name_entry = ttk.Entry(student_container)
+        self.name_entry.grid(row=1, column=1, columnspan=3, sticky=EW, padx=5, pady=5)
 
-# -------- Student Info --------
-ttk.Label(card, text="Student Name:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
-name_entry = ttk.Entry(card, width=30)
-name_entry.grid(row=1, column=1, pady=5, sticky="w")
+        ttk.Label(student_container, text="Roll No:").grid(row=2, column=0, sticky=E, padx=5, pady=5)
+        self.roll_entry = ttk.Entry(student_container)
+        self.roll_entry.grid(row=2, column=1, sticky=EW, padx=5, pady=5)
 
-ttk.Label(card, text="Roll No:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
-roll_entry = ttk.Entry(card, width=10)
-roll_entry.grid(row=2, column=1, sticky="w")
+        ttk.Label(student_container, text="Grade/Class:").grid(row=2, column=2, sticky=E, padx=5, pady=5)
+        self.grade_entry = ttk.Entry(student_container)
+        self.grade_entry.grid(row=2, column=3, sticky=EW, padx=5, pady=5)
 
-ttk.Label(card, text="Grade:").grid(row=3, column=0, sticky="e", padx=5, pady=5)
-grade_entry = ttk.Entry(card, width=10)
-grade_entry.grid(row=3, column=1, sticky="w")
+        student_container.columnconfigure((1, 3), weight=1)
 
-ttk.Label(card, text="Section:").grid(row=3, column=2, sticky="e", padx=5, pady=5)
-section_entry = ttk.Entry(card, width=10)
-section_entry.grid(row=3, column=3, sticky="w")
+        # --- Academic Record Section ---
+        self.academic_container = ttk.Frame(self.main_container, bootstyle=LIGHT)
+        self.academic_container.pack(fill=BOTH, expand=YES, pady=5, ipadx=15, ipady=10)
 
-# -------- Subjects Table --------
-ttk.Label(card, text="Subjects & Marks", font=("Segoe UI", 14, "bold")).grid(
-    row=4, column=0, columnspan=4, pady=15
-)
-subject_frame = ttk.Frame(card, padding=10, bootstyle="light")
-subject_frame.grid(row=5, column=0, columnspan=4, pady=5)
+        ttk.Label(self.academic_container, text="SUBJECT-WISE ASSESSMENT", font=("Segoe UI", 10, "bold"), bootstyle=INFO).grid(row=0, column=0, columnspan=2, sticky=W, padx=10, pady=(0,5))
 
-# Table headers
-ttk.Label(subject_frame, text="Subject", font=("Segoe UI", 12, "bold"), width=25, anchor="center", relief="ridge").grid(
-    row=0, column=0, padx=5, pady=1
-)
-ttk.Label(subject_frame, text="Marks", font=("Segoe UI", 12, "bold"), width=10, anchor="center", relief="ridge").grid(
-    row=0, column=1, padx=5, pady=1
-)
+        ttk.Label(self.academic_container, text="Subject Name", font=("Segoe UI", 9, "bold")).grid(row=1, column=0, padx=5, pady=2, sticky=W)
+        ttk.Label(self.academic_container, text="Marks", font=("Segoe UI", 9, "bold")).grid(row=1, column=1, padx=5, pady=2, sticky=W)
 
-subject_entries = []
-mark_entries = []
+        for _ in range(5):
+            self.add_subject_row()
 
-# Initial 5 rows
-for _ in range(5):
-    add_subject_row(subject_frame, subject_entries, mark_entries)
+        # Dynamic Row Controls
+        controls_frame = ttk.Frame(self.academic_container)
+        controls_frame.grid(row=999, column=0, columnspan=2, pady=10, sticky=W)
+        
+        ttk.Button(controls_frame, text="➕ Add Subject", bootstyle=SUCCESS, command=self.add_subject_row).pack(side=LEFT, padx=(5, 10))
+        ttk.Button(controls_frame, text="➖ Remove Last", bootstyle=DANGER, command=self.remove_subject_row).pack(side=LEFT)
 
-# -------- Add/Remove Buttons --------
-button_frame = ttk.Frame(card)
-button_frame.grid(row=6, column=0, columnspan=4, pady=10)
-ttk.Button(button_frame, text="+ Add Subject", bootstyle=SUCCESS, command=lambda:add_subject_row(subject_frame, subject_entries, mark_entries)).pack(side=LEFT, padx=10)
-ttk.Button(button_frame, text="- Remove Subject", bootstyle=DANGER, command=lambda:remove_subject_row(subject_entries, mark_entries)).pack(side=LEFT, padx=10)
+        # --- Action Buttons ---
+        # Positioned at the bottom of the container
+        action_frame = ttk.Frame(self.main_container)
+        action_frame.pack(fill=X, pady=15)
 
-# -------- Generate Functions --------
-def generate_single_marksheet():
-    try:
-        student = {
-            "Name": name_entry.get().strip(),
-            "Roll": roll_entry.get().strip(),
-            "Grade": grade_entry.get().strip(),
-            "Section": section_entry.get().strip()
-        }
-        subjects = [s.get().strip() for s in subject_entries]
-        marks = [m.get().strip() for m in mark_entries]
+        ttk.Button(action_frame, text="💾 Generate PDF", bootstyle=PRIMARY, width=20, command=self.generate_single).pack(side=LEFT, padx=(0, 15))
+        ttk.Button(action_frame, text="📊 Batch Import", bootstyle=SECONDARY, width=20, command=self.generate_batch).pack(side=LEFT)
 
-        if not all(student.values()):
-            messagebox.showerror("Error", "Please fill all student details")
-            return
-        if any(s == "" for s in subjects):
-            messagebox.showerror("Error", "Please fill all subjects")
-            return
-        if any(not m.isdigit() for m in marks):
-            messagebox.showerror("Error", "All marks must be numbers")
-            return
+    def add_subject_row(self):
+        row_index = len(self.subject_entries) + 2  
+        s = ttk.Entry(self.academic_container, width=40)
+        s.grid(row=row_index, column=0, padx=5, pady=3, sticky=W)
+        m = ttk.Entry(self.academic_container, width=15)
+        m.grid(row=row_index, column=1, padx=5, pady=3, sticky=W)
+        self.subject_entries.append(s)
+        self.mark_entries.append(m)
 
-        output_file = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files","*.pdf")])
-        if not output_file: return
+    def remove_subject_row(self):
+        if len(self.subject_entries) > 1:
+            self.subject_entries[-1].destroy()
+            self.mark_entries[-1].destroy()
+            self.subject_entries.pop()
+            self.mark_entries.pop()
 
-        marks = [int(m) for m in marks]
-        generate_marksheet_pdf(student, subjects, marks, output_file)
-        messagebox.showinfo("Success", f"Marksheet generated!\n{output_file}")
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
+    def generate_single(self):
+        try:
+            student = {
+                "Name": self.name_entry.get().strip(),
+                "Roll": self.roll_entry.get().strip(),
+                "Grade": self.grade_entry.get().strip()
+            }
+            subjects = [s.get().strip() for s, m in zip(self.subject_entries, self.mark_entries) if s.get().strip()]
+            marks = [m.get().strip() for s, m in zip(self.subject_entries, self.mark_entries) if s.get().strip()]
 
-def generate_batch_marksheets_gui():
-    file_path = filedialog.askopenfilename(filetypes=[("Excel files","*.xlsx"), ("CSV files","*.csv")])
-    if not file_path: return
-    folder = filedialog.askdirectory(title="Select folder to save PDFs")
-    if not folder: return
-    try:
-        batch_generate_marksheets(file_path, folder)
-        messagebox.showinfo("Success", f"All marksheets generated in {folder}")
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
+            if not student["Name"] or not subjects:
+                messagebox.showerror("Error", "Please fill Student Name and at least one Subject.")
+                return
 
-# -------- Generate Buttons --------
-gen_frame = ttk.Frame(card)
-gen_frame.grid(row=7, column=0, columnspan=4, pady=20)
-ttk.Button(gen_frame, text="Generate Single Marksheet", bootstyle=PRIMARY, command=generate_single_marksheet).pack(side=LEFT, padx=15)
-ttk.Button(gen_frame, text="Batch Generate from Excel/CSV", bootstyle=INFO, command=generate_batch_marksheets_gui).pack(side=LEFT, padx=15)
+            output_file = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files","*.pdf")])
+            if not output_file: return
 
-root.mainloop()
+            generate_marksheet_pdf(student, subjects, [int(m) for m in marks], output_file)
+            messagebox.showinfo("Success", "PDF Generated!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed: {str(e)}")
+
+    def generate_batch(self):
+        file_path = filedialog.askopenfilename(filetypes=[("Data files", "*.xlsx *.csv")])
+        if not file_path: return
+        folder = filedialog.askdirectory()
+        if not folder: return
+        try:
+            batch_generate_marksheets(file_path, folder)
+            messagebox.showinfo("Success", "Batch Complete!")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+if __name__ == "__main__":
+    app_root = ttk.Window(themename="cosmo")
+    app = MarksheetApp(app_root)
+    app_root.mainloop()
