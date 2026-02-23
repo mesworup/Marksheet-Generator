@@ -50,8 +50,14 @@ Any additional columns will be treated as Subject Names with their corresponding
 
 ## 📸 Screenshots
 > *Tip: Replace these placeholders with actual screenshots of your app!*
-1. **Main Interface:** `C:\Users\razzs\OneDrive\Documents\Project\Marksheet-Generator\image.png`
-2. **Generated Marksheet PDF:** `C:\Users\razzs\OneDrive\Documents\Project\Marksheet-Generator\testpdf.png`
+1. **Main Interface:** 
+<p align="center">
+  <img src="screenshots\image.png" width="600" alt="Main Interface">
+</p>
+
+2. **Generated Marksheet PDF:** <p align="center">
+  <img src="screenshots\testpdf.png" width="600" alt="Main Interface">
+</p>
 
 
 
