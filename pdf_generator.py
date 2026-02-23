@@ -112,4 +112,4 @@ if __name__ == "__main__":
     # Testing with 3 subjects to show 300 vs 173 logic
     subjects = ["Math", "Science", "Social"]
     marks = [50, 78, 45] # Total: 173
-    generate_marksheet_pdf(student_info, subjects, marks, "marksheet_split_total.pdf")
+    generate_marksheet_pdf(student_info, subjects, marks, "marksheet_split_total.pdf") 
