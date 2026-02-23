@@ -49,13 +49,16 @@ Any additional columns will be treated as Subject Names with their corresponding
 * Matplotlib - Performance charting.
 
 ## 📸 Screenshots
-> *Tip: Replace these placeholders with actual screenshots of your app!*
+
 1. **Main Interface:** 
+
 <p align="center">
   <img src="screenshots\image.png" width="600" alt="Main Interface">
 </p>
 
-2. **Generated Marksheet PDF:** <p align="center">
+2. **Generated Marksheet PDF:** 
+
+<p align="center">
   <img src="screenshots\testpdf.png" width="600" alt="Main Interface">
 </p>
 
