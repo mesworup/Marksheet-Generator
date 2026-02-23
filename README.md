@@ -1,139 +1,65 @@
-# Marksheet Generator
+# 🎓 Marksheet Generation System
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue)](https://www.python.org/)  
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)  
-[![ttkbootstrap](https://img.shields.io/badge/ttkbootstrap-0.7.2-orange)](https://pypi.org/project/ttkbootstrap/)  
-[![ReportLab](https://img.shields.io/badge/ReportLab-3.6.12-red)](https://www.reportlab.com/)
+A professional Python-based desktop application designed for schools to automate the creation of student progress reports. Generate high-quality PDFs with GPA calculations, grade distributions, and visual charts in seconds.
 
-A **modern, GUI-based Python application** to generate student marksheets in **PDF format**, complete with **GPA, charts, and batch Excel/CSV import**. Designed for schools and educators, it supports both **single student** and **batch processing**.
+## ✨ Features
+* **Dual Mode Generation:** Create individual marksheets manually or process hundreds at once using Excel/CSV batch imports.
+* **Automated GPA Logic:** Built-in calculation engine for GPA and Letter Grades based on custom percentage intervals.
+* **Visual Analytics:** Automatically generates a bar chart for subject-wise performance using Matplotlib.
+* **Professional PDF Output:** Beautifully formatted reports featuring school branding, grading keys, and signature placeholders via ReportLab.
+* **Modern UI:** A clean, user-friendly interface powered by `ttkbootstrap`.
 
----
+## 📁 Project Structure
+* `main.py`: The entry point and GUI logic.
+* `pdf_generator.py`: Handles the PDF layout and table construction.
+* `batch_processor.py`: Manages data extraction from .csv and .xlsx files.
+* `gpa_calculator.py`: Contains the logic for grade-to-point conversion.
+* `utils.py`: Generates performance charts.
+* `requirements.txt`: List of necessary Python libraries.
 
-## Features
+## 🚀 Getting Started
 
-- ✅ Modern GUI using **ttkbootstrap**  
-- ✅ Dynamic subject entry (add/remove subjects)  
-- ✅ PDF marksheets with:
-  - School header and logo  
-  - Colored table for marks & GPA  
-  - GPA reference table  
-  - Marks distribution chart  
-- ✅ GPA calculation and letter grading  
-- ✅ Batch generation via Excel/CSV files  
-- ✅ Save PDFs to user-selected folder  
-- ✅ Error handling for invalid inputs  
+### 1. Prerequisites
+Ensure you have Python 3.8+ installed on your system.
 
----
+### 2. Installation
+Clone this repository or download the source code, then install the dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-## Project Structure
-
-
-marksheet_app/
-├── main.py # GUI entry point
-├── pdf_generator.py # PDF generation functions
-├── gpa_calculator.py # GPA & grading logic
-├── batch_processor.py # Batch Excel/CSV processing
-├── utils.py # Helper functions (charts)
-├── assets/ # Logos, icons, screenshots
-│ └── school_logo.png
-├── requirements.txt # Python dependencies
-└── README.md
-
-
----
-
-## Installation
-
-1. **Clone the repository:**
+### 3. Usage
+Run the application using:
 
 ```bash
-git clone https://github.com/yourusername/marksheet_app.git
-cd marksheet_app
-
-Create a virtual environment (recommended):
-
-python -m venv venv
-# Activate
-# Windows
-venv\Scripts\activate
-# Linux / Mac
-source venv/bin/activate
-
-Install dependencies:
-
-pip install -r requirements.txt
-
-requirements.txt includes:
-
-ttkbootstrap
-reportlab
-matplotlib
-pandas
-openpyxl
-Usage
-1️⃣ Single Student Marksheet
-
-Run the GUI:
-
 python main.py
+```
 
-Enter student details: Name, Roll No, Grade, Section.
+### 4. Batch Import Format
+For batch processing, your Excel or CSV file must contain the following headers:
 
-Enter subjects and marks.
+Name, Roll, Grade
 
-Click "Generate Single Marksheet".
+Any additional columns will be treated as Subject Names with their corresponding marks.
 
-Select output PDF location.
+🛠️ Built With
+ttkbootstrap - Modern GUI theming.
 
-Marksheet is generated with GPA, percentage, and chart.
+ReportLab - PDF generation engine.
 
-2️⃣ Batch Generation via Excel/CSV
+Pandas - Data manipulation.
 
-Prepare an Excel/CSV file with columns:
+Matplotlib - Performance charting.
 
-Name, Roll, Grade, Section, Subject1, Subject2, ...
+📝 License
+This project is for educational use. Feel free to modify it for your school's specific needs.
 
-Run the GUI and click "Batch Generate from Excel/CSV".
 
-Select the Excel/CSV file.
+---
 
-Select a folder to save all PDFs.
+### 🎨 Visualizing the Workflow
+The system follows a linear data pipeline to ensure accuracy and visual appeal:
 
-All students’ PDFs are generated automatically.
 
-Example CSV:
 
-Name	Roll	Grade	Section	Math	English	Science	Nepali
-Roshan Chaudhary	101	10	A	92	88	85	90
-Nadish Acharya	102	10	A	85	90	80	88
-Screenshots
-
-GUI:
-
-PDF Output:
-
-License
-
-MIT License - see LICENSE
-
-Future Improvements
-
-Add Excel export of results.
-
-Option to email PDF marksheets directly to students.
-
-Add school logo dynamically in PDF.
-
-Add themes for GUI.
-
-Author
-
-Nadish Acharya
-
-Roshan Chaudhary
-
-Sworup Raj Ghatani
-
-Supervisor: Dr. Ashim Khadka
-
-This project is a real-world school project example and is GitHub-ready for portfolios.
+**Now that you have the requirements and the README, would you like me to help you double
